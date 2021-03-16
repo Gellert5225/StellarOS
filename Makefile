@@ -16,12 +16,12 @@ BOOT_SRC := $(wildcard $(SRC_DIR)/boot.S)
 
 OBJ := $(C_SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
-all: build run
+all: build run 
 
-build: boot
+build: boot $(ISO_DIR)
 	dd status=noxfer conv=notrunc if=$(BIN_DIR)/boot.bin of=$(ISO_DIR)/boot.iso
 
-boot: $(BOOT_SRC)
+boot: $(BIN_DIR) $(BOOT_SRC)
 	$(NASM) $(NASMFLAGS) $(BIN_DIR)/boot.bin $(BOOT_SRC)
 
 run: 
@@ -29,3 +29,9 @@ run:
 
 clean:
 	rm -rf bin/* iso/*
+
+$(ISO_DIR):
+	mkdir -p $@
+
+$(BIN_DIR):
+	mkdir -p $@
