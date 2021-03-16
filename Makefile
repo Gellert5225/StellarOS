@@ -29,7 +29,7 @@ boot: $(BIN_DIR) $(BOOT_SRC)
 	$(NASM) $(NASMFLAGS) $(BIN_DIR)/boot.bin $(BOOT_SRC)
 
 run: 
-	qemu-system-i386 -fda $(ISO_DIR)/boot.iso
+	qemu-system-i386 -drive format=raw,file=$(ISO_DIR)/boot.iso
 
 clean:
 	rm -rf bin/* iso/*
