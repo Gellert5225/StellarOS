@@ -23,13 +23,15 @@ OBJ := $(C_SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 all: build run 
 
 build: boot $(ISO_DIR)
-	dd status=noxfer conv=notrunc if=$(BIN_DIR)/boot.bin of=$(ISO_DIR)/boot.iso
+	cat $(BIN_DIR)/boot.bin $(BIN_DIR)/kernel.bin > $(ISO_DIR)/os.iso
+	#dd status=noxfer conv=notrunc if=$(BIN_DIR)/boot.bin of=$(ISO_DIR)/boot.bin
 
-boot: $(BIN_DIR) $(BOOT_SRC)
-	$(NASM) $(NASMFLAGS) $(BIN_DIR)/boot.bin $(BOOT_SRC)
+boot: $(BIN_DIR) $(SRC_DIR)
+	$(NASM) $(NASMFLAGS) $(BIN_DIR)/boot.bin src/boot.S
+	$(NASM) $(NASMFLAGS) $(BIN_DIR)/kernel.bin src/kernel.S
 
 run: 
-	qemu-system-i386 -drive format=raw,file=$(ISO_DIR)/boot.iso
+	qemu-system-i386 -drive format=raw,file=$(ISO_DIR)/os.iso
 
 clean:
 	rm -rf bin/* iso/*

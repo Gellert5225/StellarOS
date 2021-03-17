@@ -1,12 +1,12 @@
 print_string:	
-	mov ah, 0Eh
+	mov ah, 0x0E
 
 	.repeat:
-		cmp [bx], byte 0
+        mov al, [si]
+		cmp al, byte 0
 		je .done
-		mov al, [bx]
 		int 10h
-		inc bx
+		inc si
 		jmp .repeat
 
 	.done:

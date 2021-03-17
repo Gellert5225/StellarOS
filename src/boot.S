@@ -1,27 +1,65 @@
-BITS 16					; Assemble for 16-bit mode
+;;
+;; boot loader
+;;
 
-start:
-	;mov [BOOT_DISK], dl
+BITS 16
 
-	; Starting address of bootloader is 0x7C00(physical)
-	; we need to translate it into segment, 0x7C00 = segment * 16 + offset, where offset = 0
-	mov ax, 07C0h
-	add ax, 20h			; 512 bytes / 16, ie, size of bootloader
-	mov ss, ax			; set stack segment to ax
-	mov sp, 4096		; move stack pointer 4096 bytes away from ss
+org 0x7C00
 
-	mov ax, 07C0h		; Set data segment to where we're loaded
-	mov ds, ax
+mov si, asterisks
+call print_string
 
-	mov bx, text_string	; Put string position into SI
-	call print_string	; Call our string-printing routine
+mov si, boot_starting
+call print_string
 
-	jmp $				; Infinite loop
+mov bx, 0x1000					; load sector to mem 0x1000
+mov es, bx						; set es segment
+mov bx, 0x0
 
-	text_string db 'Welcome to StellarOS', 0
+mov dh, 0x00        ; head 0
+mov dl, 0x80        ; drive 0
+mov ch, 0x00        ; cylinder 0
+mov cl, 0x02        ; read at CL sector 2, immediately after bootsector
 
-	%include "src/print.S"
-	%include "src/disk.S"
+disk_load:
+    mov si, loading_kernel
+    call print_string
 
-	times 510-($-$$) db 0	; Pad remainder of boot sector with 0s
-	dw 0xAA55				; The standard PC boot signature, little endian
+    mov ah, 0x02        ; BIOS read sector from drive
+    mov al, 0x01        ; numbers of sectors
+
+    int 0x13            ; BIOS interrupt
+    jc disk_err
+
+    mov si, kernel_loaded
+    call print_string
+
+    mov si, asterisks
+    call print_string
+
+    mov ax, 0x1000
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+
+    jmp 0x1000:0x0
+
+asterisks db '************************', 13, 10, 0
+
+boot_starting db 'Boot starting...', 13, 10, 0
+
+boot_finished db 'Boot finished.', 13, 10, 0
+
+loading_kernel db 'Loading kernel...', 13, 10, 0
+
+kernel_loaded db 'Kernel loaded.', 13, 10, 0
+
+disk_err:
+    hlt
+
+%include "src/print.S"
+
+	times 510-($-$$) db 0		; Pad remainder of boot sector with 0s
+	dw 0xAA55					; The standard PC boot signature, little endian
