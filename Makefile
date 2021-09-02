@@ -6,12 +6,12 @@ BIN_DIR := bin
 # compilers
 CC = gcc
 LD = ld
-NASM = nasm
+FASM = fasm
 
 # compile flags
 CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-pie -no-pie
 LFLAGS = -m32
-NASMFLAGS = -f bin -o
+FASMFLAGS = -f bin -o
 
 # source
 C_SRC := $(wildcard $(SRC_DIR)/*.c)
@@ -24,11 +24,11 @@ all: build run
 
 build: boot $(ISO_DIR)
 	cat $(BIN_DIR)/boot.bin $(BIN_DIR)/kernel.bin > $(ISO_DIR)/os.iso
-	#dd status=noxfer conv=notrunc if=$(BIN_DIR)/boot.bin of=$(ISO_DIR)/boot.bin
+#	dd status=noxfer conv=notrunc if=$(BIN_DIR)/boot.bin of=$(ISO_DIR)/boot.bin
 
 boot: $(BIN_DIR) $(SRC_DIR)
-	$(NASM) $(NASMFLAGS) $(BIN_DIR)/boot.bin src/boot.S
-	$(NASM) $(NASMFLAGS) $(BIN_DIR)/kernel.bin src/kernel.S
+	$(FASM) src/boot.S $(BIN_DIR)/boot.bin
+	$(FASM) src/kernel.S $(BIN_DIR)/kernel.bin
 
 run: 
 	qemu-system-i386 -drive format=raw,file=$(ISO_DIR)/os.iso

@@ -1,19 +1,21 @@
 ;;
-;; simple kernel
+;; Simple kernel loaded from boot sector
 ;;
 
-;mov ah, 0x00                ; set video mode
-;mov al, 0x02                
-;int 0x10
+    mov si, welcome_msg
+    call print_str
 
-mov si, text_string			; Put string position into SI
-call print_string			; Call our string-printing routine
+    mov si, 0x12AB              ; print sample hex
+    call print_hex
 
-hlt
+    ;; end program
+    hlt
 
-text_string db 'Welcome to StellarOS', 13, 10, 0
+welcome_msg:    db 'Welcome to StellarOS', 13, 10, 0
 
-;; include files
-%include "src/print.S"
+    ;; include files
+    include 'src/print_str.S'
+    include 'src/print_hex.S'
+
 
 times 512-($-$$) db 0		; Pad remainder of boot sector with 0s
