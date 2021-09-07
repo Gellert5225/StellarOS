@@ -15,21 +15,20 @@ FASMFLAGS = -f bin -o
 
 # source
 C_SRC := $(wildcard $(SRC_DIR)/*.c)
-BOOT_SRC := $(wildcard $(SRC_DIR)/boot.S)
+BOOT_SRC := $(wildcard $(SRC_DIR)/boot/*.S)
 
-OBJ := $(C_SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+BOOT_PROG = $(patsubst %.S,%,$(BOOT_SRC))
 
 # make targets
-all: build run 
+all: build run
 
-build: boot $(ISO_DIR)
-	cat $(BIN_DIR)/boot.bin $(BIN_DIR)/fat.bin $(BIN_DIR)/kernel.bin > $(ISO_DIR)/os.iso
-#	dd status=noxfer conv=notrunc if=$(BIN_DIR)/boot.bin of=$(ISO_DIR)/boot.bin
+$(BOOT_PROG): | $(ISO_DIR) $(BIN_DIR)
 
-boot: $(BIN_DIR) $(SRC_DIR)
-	$(FASM) src/boot.S 		$(BIN_DIR)/boot.bin
-	$(FASM) src/fat.S 		$(BIN_DIR)/fat.bin
-	$(FASM) src/kernel.S 	$(BIN_DIR)/kernel.bin
+%: %.S
+	$(FASM) $< $(BIN_DIR)/$(@F).bin
+
+build: $(BOOT_PROG)
+	cat $(BIN_DIR)/*.bin > $(ISO_DIR)/os.iso
 
 run: 
 	qemu-system-i386 -drive format=raw,file=$(ISO_DIR)/os.iso
